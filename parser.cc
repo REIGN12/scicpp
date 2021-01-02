@@ -97,17 +97,28 @@ ExprNode* func_parser(string func_s)
     // 利用 map 表示运算符的优先级
     map<string,int> pri 
     {
-        {"+",0},{"-",0},{"*",1},{"/",1},{"^",2}
+        {"+",0},{"-",0},{"*",1},{"/",1},{"^",2},
+        {"sin",4}
     };
-    regex re_op(R"([\+\-\*\/\^])");
+    regex re_op(R"([\+\-\*\/\^]|(sin))");
     regex re_lpar(R"(\()");
     regex re_rpar(R"(\))");
+    regex re_biop(R"([\+\-\*\/\^])");
+    //regex re_unop(R"((sin))");
 
 
     // 使用栈完成字符串转化为表达式
     vector<string> sop;
     vector<ExprNode*> sexpr;
     int sexpr_top = 0;
+    auto un_op_pop = [&sexpr,&sexpr_top,&sop]()
+    {
+        sexpr_top--;
+        sexpr.insert(sexpr.begin()+sexpr_top,
+        new ExprNode(sop.back(),sexpr[sexpr_top]));
+        sexpr_top++;
+        sop.pop_back();
+    };
     auto bin_op_pop = [&sexpr,&sexpr_top,&sop]()
     {
         sexpr_top-=2;
@@ -123,7 +134,8 @@ ExprNode* func_parser(string func_s)
             while(!sop.empty() && pri[sop.back()] > pri[s])
             {
                 // 对于双目运算符
-                bin_op_pop();
+                if(regex_match(sop.back(),re_biop))bin_op_pop();
+                else un_op_pop();
             }
             sop.push_back(s);
         }
@@ -133,7 +145,8 @@ ExprNode* func_parser(string func_s)
             while(sop.back() != "(")
             {
                 // 对于双目运算符
-                bin_op_pop();
+                if(regex_match(sop.back(),re_biop))bin_op_pop();
+                else un_op_pop();
             }
             sop.pop_back();
         }
@@ -148,7 +161,8 @@ ExprNode* func_parser(string func_s)
     while(!sop.empty())
     {
         // 对于双目运算符
-        bin_op_pop();
+        if(regex_match(sop.back(),re_biop))bin_op_pop();
+        else un_op_pop();
     }
     return sexpr[0];
 
