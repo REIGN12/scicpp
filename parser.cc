@@ -70,8 +70,12 @@ void func_parser_preprocesser(string& func_s)
     regex re_bl(R"(\s+)");
     func_s = regex_replace(func_s,re_bl,"");
     // 利用 regex 将表达式中的 operator 和 term 分开
-    regex re_op(R"([\+\*\-\/\^])");// using raw string
-    func_s = regex_replace(func_s,re_op," $0 ");
+    // 分出 binary op
+    regex re_biop(R"([\+\*\-\/\^])");// using raw string
+    func_s = regex_replace(func_s,re_biop," $0 ");
+    // 分出 unary op
+    regex re_unop(R"((sin)|(exp))");
+    func_s = regex_replace(func_s,re_unop,"$0 ");
     // 利用 regex 将表达式中的 左右括号 分开
     regex re_lpar(R"(\()");
     func_s = regex_replace(func_s,re_lpar,"$0 ");
