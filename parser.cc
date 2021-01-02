@@ -59,7 +59,9 @@ class ExprNode
             {"*",[](double x,ExprNode*a,ExprNode*b){return (*a)(x)*(*b)(x);}},
             {"/",[](double x,ExprNode*a,ExprNode*b){return (*a)(x)/(*b)(x);}},
             {"^",[](double x,ExprNode*a,ExprNode*b){return pow((*a)(x),(*b)(x));}},
-            {"sin",[](double x, ExprNode*a,ExprNode*b){return sin((*a)(x));}}
+            {"sin",[](double x, ExprNode*a,ExprNode*b){return sin((*a)(x));}},
+            {"cos",[](double x, ExprNode*a,ExprNode*b){return cos((*a)(x));}},
+            {"exp",[](double x, ExprNode*a,ExprNode*b){return exp((*a)(x));}}
         };
 };
 
@@ -74,7 +76,7 @@ void func_parser_preprocesser(string& func_s)
     regex re_biop(R"([\+\*\-\/\^])");// using raw string
     func_s = regex_replace(func_s,re_biop," $0 ");
     // 分出 unary op
-    regex re_unop(R"((sin)|(exp))");
+    regex re_unop(R"((sin)|(cos)|(exp))");
     func_s = regex_replace(func_s,re_unop,"$0 ");
     // 利用 regex 将表达式中的 左右括号 分开
     regex re_lpar(R"(\()");
@@ -98,9 +100,9 @@ ExprNode* func_parser(string func_s)
     map<string,int> pri 
     {
         {"+",0},{"-",0},{"*",1},{"/",1},{"^",2},
-        {"sin",4}
+        {"sin",4},{"cos",4},{"exp",4}
     };
-    regex re_op(R"([\+\-\*\/\^]|(sin))");
+    regex re_op(R"([\+\-\*\/\^]|(sin)|(cos)|(exp))");
     regex re_lpar(R"(\()");
     regex re_rpar(R"(\))");
     regex re_biop(R"([\+\-\*\/\^])");
