@@ -63,11 +63,53 @@ ExprNode* func_parser(string func_s)
     vector<string> terms(sregex_token_iterator(func_s.begin(),func_s.end(),re,-1),end);
     vector<string> ops(sregex_token_iterator(func_s.begin(),func_s.end(),re,0),end);
 
-    // 使用栈完成字符串转化为表达式
     // 利用 map 表示运算符的优先级
     map<string,int> pri 
     {
         {"+",0},{"*",1}
     };
 
+    // 使用栈完成字符串转化为表达式
+    vector<string> sop;
+    vector<ExprNode*> sexpr;
+    int sexpr_top = 0;
+    
+    sexpr.push_back("x"==terms[0] ? new ExprNode() : new ExprNode(stod(terms[0])));
+    sexpr_top++;
+    for(size_t i = 0; i<ops.size();++i)
+    {
+        if(!sop.empty())
+        {
+            while(pri[sop.back()] > pri[ops[i]])
+            {
+                sexpr_top-=2;
+                sexpr.insert(sexpr.begin()+sexpr_top,
+                new ExprNode{sop.back(), sexpr[sexpr_top],sexpr[sexpr_top+1]});
+                sexpr_top++;
+                sop.pop_back();
+            }
+        }
+        sop.push_back(ops[i]);
+        sexpr.insert(sexpr.begin()+sexpr_top,
+        "x"==terms[i+1] ? new ExprNode() : new ExprNode(stod(terms[i+1])));
+        sexpr_top++;
+    }
+    while(!sop.empty())
+    {
+        sexpr_top -= 2;
+        sexpr.insert(sexpr.begin()+sexpr_top,
+        new ExprNode{sop.back(),sexpr[sexpr_top],sexpr[sexpr_top+1]});
+        sexpr_top++;
+        sop.pop_back();
+    }
+    return sexpr[0];
+
+}
+
+int main(argv,args[])
+{
+    ExprNode* p = func_parser("2*5+x");
+    double t = (*p)(100.);
+    cout<<t;
+    return 0;
 }
