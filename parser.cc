@@ -48,7 +48,9 @@ class ExprNode
         map<string,double(*)(double,ExprNode*,ExprNode*)> opeff
         {
             {"+",[](double x,ExprNode*a,ExprNode*b){return (*a)(x)+(*b)(x);}},
-            {"*",[](double x,ExprNode*a,ExprNode*b){return (*a)(x)*(*b)(x);}}
+            {"-",[](double x,ExprNode*a,ExprNode*b){return (*a)(x)-(*b)(x);}},
+            {"*",[](double x,ExprNode*a,ExprNode*b){return (*a)(x)*(*b)(x);}},
+            {"/",[](double x,ExprNode*a,ExprNode*b){return (*a)(x)/(*b)(x);}}
         };
 };
 
@@ -58,7 +60,7 @@ ExprNode* func_parser(string func_s)
     // 已经利用 regex 做预处理，使得表达式没有空白字符
 
     // 利用 regex 做字符串分割, 分为 terms 和 ops 两部分
-    regex re("[\\+\\*]");
+    regex re(R"([\+\*\-\/])");
     auto end = sregex_token_iterator();
     vector<string> terms(sregex_token_iterator(func_s.begin(),func_s.end(),re,-1),end);
     vector<string> ops(sregex_token_iterator(func_s.begin(),func_s.end(),re,0),end);
@@ -66,7 +68,7 @@ ExprNode* func_parser(string func_s)
     // 利用 map 表示运算符的优先级
     map<string,int> pri 
     {
-        {"+",0},{"*",1}
+        {"+",0},{"-",0},{"*",1},{"/",1}
     };
 
     // 使用栈完成字符串转化为表达式
@@ -106,10 +108,15 @@ ExprNode* func_parser(string func_s)
 
 }
 
-int main(argv,args[])
+int main(int argc,char* argv[])
 {
-    ExprNode* p = func_parser("2*5+x");
-    double t = (*p)(100.);
-    cout<<t;
+    ExprNode* p = func_parser(string(argv[1]));
+    double x = stod(argv[2]);
+    double t = (*p)(x);
+    cout<<t<<"\n";
+   //ExprNode* p = func_parser("1+2-3*5/2");
+   //double t = (*p)(200.);
+
+
     return 0;
 }
