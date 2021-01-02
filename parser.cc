@@ -4,7 +4,6 @@
 #include<map>
 #include<regex>
 
-
 using namespace std;
 
 // 定义 expr tree 的节点(定义为 functor)
@@ -25,7 +24,7 @@ class ExprNode
         // for binary operator node
         ExprNode(string _op,ExprNode*a,ExprNode*b)
         :
-        op{_op},lc{a},rc{b},tag{FUNC}
+        lc{a},rc{b},tag{FUNC}
         {func = opeff[_op];};
 
         double operator() (double x)
@@ -33,18 +32,17 @@ class ExprNode
             switch (tag)
             {
             case VAL:
-                return val;
+                return this->val;
             case FUNC:
                 return func(x,lc,rc);
             }
         }
 
-    private:
+    //private:
         double val;
         double(*func)(double,ExprNode*,ExprNode*);
         ExprNode* lc;
         ExprNode* rc;
-        string op;
         enum{VAL,FUNC};
         int tag;
         map<string,double(*)(double,ExprNode*,ExprNode*)> opeff
@@ -54,11 +52,12 @@ class ExprNode
         };
 };
 
-vector<ExprNode> func_parse(string func_s)
-{
-    //利用 regex 做预处理，使得表达式没有空白字符
 
-    //利用 regex 做字符串分割, 分为 terms 和 ops 两部分
+ExprNode* func_parser(string func_s)
+{
+    // 已经利用 regex 做预处理，使得表达式没有空白字符
+
+    // 利用 regex 做字符串分割, 分为 terms 和 ops 两部分
     regex re("[\\+\\*]");
     auto end = sregex_token_iterator();
     vector<string> terms(sregex_token_iterator(func_s.begin(),func_s.end(),re,-1),end);
@@ -71,18 +70,4 @@ vector<ExprNode> func_parse(string func_s)
         {"+",0},{"*",1}
     };
 
-};
-
-
-
-int main()
-{
-    ExprNode a;
-    ExprNode b(10.);
-    ExprNode c("+",&a,&b);
-
-    double test = c(100.);
-
-    cout << test;
-    return 0;
 }
