@@ -4,6 +4,7 @@
 #include<map>
 #include<regex>
 #include<cmath>
+#include<algorithm>
 
 using namespace std;
 
@@ -56,17 +57,30 @@ class ExprNode
         };
 };
 
-ExprNode* func_parser(string func_s)
+void func_parser_preprocesser(string& func_s)
 {
     /* preprocess start */
     // 利用 regex 做预处理，使得表达式没有空白字符
     regex re_bl(R"(\s+)");
     func_s = regex_replace(func_s,re_bl,"");
     // 利用 regex 将表达式中的 operator 和 term 分开
-    // 返回 exprs (vec of string)
     regex re_op(R"([\+\*\-\/\^])");// using raw string
     func_s = regex_replace(func_s,re_op," $0 ");
+    // 利用 regex 将表达式中的 左右括号 分开
+    regex re_lpar(R"(\()");
+    func_s = regex_replace(func_s,re_lpar,"$0 ");
+    regex re_rpar(R"(\))");
+    func_s = regex_replace(func_s,re_rpar," $0");
+}
+
+ExprNode* func_parser(string func_s)
+{
+    // sep the op and term
+    func_parser_preprocesser(func_s);
+    
+    // 返回 exprs (vec of string)
     auto end = sregex_token_iterator();
+    regex re_bl(R"(\s+)");
     vector<string> exprs(sregex_token_iterator(func_s.begin(),func_s.end(),re_bl,-1),end);
     /* preprocess end */
 
@@ -75,6 +89,9 @@ ExprNode* func_parser(string func_s)
     {
         {"+",0},{"-",0},{"*",1},{"/",1},{"^",2}
     };
+    regex re_op(R"([\+\-\*\/\^])");
+    regex re_lpar(R"(\()");
+    regex re_rpar(R"(\))");
 
     // 使用栈完成字符串转化为表达式
     vector<string> sop;
@@ -95,7 +112,21 @@ ExprNode* func_parser(string func_s)
             }
             sop.push_back(s);
         }
-        else 
+        else if(regex_match(s,re_lpar))sop.push_back(s);
+        else if(regex_match(s,re_rpar))
+        {
+            while(sop.back() != "(")
+            {
+                // 对于双目运算符
+                sexpr_top-=2;
+                sexpr.insert(sexpr.begin()+sexpr_top,
+                new ExprNode{sop.back(),sexpr[sexpr_top],sexpr[sexpr_top+1]});
+                sexpr_top++;
+                sop.pop_back();
+            }
+            sop.pop_back();
+        }
+        else
         {
             sexpr.insert(sexpr.begin()+sexpr_top,
             "x"==s? new ExprNode() : new ExprNode(stod(s)));
