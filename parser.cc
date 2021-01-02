@@ -23,6 +23,11 @@ class ExprNode
         lc{nullptr},rc{nullptr},tag{FUNC},
         func{[](double _x, ExprNode* a,ExprNode*b){return _x;}}
         {};
+        // for unary operator node
+        ExprNode(string _op,ExprNode*a)
+        :
+        lc{a},rc{nullptr},tag{FUNC}
+        {func = opeff[_op];};
         // for binary operator node
         ExprNode(string _op,ExprNode*a,ExprNode*b)
         :
@@ -53,7 +58,8 @@ class ExprNode
             {"-",[](double x,ExprNode*a,ExprNode*b){return (*a)(x)-(*b)(x);}},
             {"*",[](double x,ExprNode*a,ExprNode*b){return (*a)(x)*(*b)(x);}},
             {"/",[](double x,ExprNode*a,ExprNode*b){return (*a)(x)/(*b)(x);}},
-            {"^",[](double x,ExprNode*a,ExprNode*b){return pow((*a)(x),(*b)(x));}}
+            {"^",[](double x,ExprNode*a,ExprNode*b){return pow((*a)(x),(*b)(x));}},
+            {"sin",[](double x, ExprNode*a,ExprNode*b){return sin((*a)(x));}}
         };
 };
 
