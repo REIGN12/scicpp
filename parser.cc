@@ -57,15 +57,18 @@ class ExprNode
 };
 
 
+
 ExprNode* func_parser(string func_s)
 {
-    // 已经利用 regex 做预处理，使得表达式没有空白字符
+    // 利用 regex 做预处理，使得表达式没有空白字符
+    regex re_bl(R"(\s+)");
+    func_s = regex_replace(func_s,re_bl,"");
 
     // 利用 regex 做字符串分割, 分为 terms 和 ops 两部分
-    regex re(R"([\+\*\-\/\^])");// using raw string
+    regex re_op(R"([\+\*\-\/\^])");// using raw string
     auto end = sregex_token_iterator();
-    vector<string> terms(sregex_token_iterator(func_s.begin(),func_s.end(),re,-1),end);
-    vector<string> ops(sregex_token_iterator(func_s.begin(),func_s.end(),re,0),end);
+    vector<string> terms(sregex_token_iterator(func_s.begin(),func_s.end(),re_op,-1),end);
+    vector<string> ops(sregex_token_iterator(func_s.begin(),func_s.end(),re_op,0),end);
 
     // 利用 map 表示运算符的优先级
     map<string,int> pri 
