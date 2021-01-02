@@ -93,10 +93,19 @@ ExprNode* func_parser(string func_s)
     regex re_lpar(R"(\()");
     regex re_rpar(R"(\))");
 
+
     // 使用栈完成字符串转化为表达式
     vector<string> sop;
     vector<ExprNode*> sexpr;
     int sexpr_top = 0;
+    auto bin_op_pop = [&sexpr,&sexpr_top,&sop]()
+    {
+        sexpr_top-=2;
+        sexpr.insert(sexpr.begin()+sexpr_top,
+        new ExprNode{sop.back(),sexpr[sexpr_top],sexpr[sexpr_top+1]});
+        sexpr_top++;
+        sop.pop_back();
+    };
     for(auto&& s : exprs)
     {
         if(regex_match(s,re_op))
@@ -104,11 +113,7 @@ ExprNode* func_parser(string func_s)
             while(!sop.empty() && pri[sop.back()] > pri[s])
             {
                 // 对于双目运算符
-                sexpr_top-=2;
-                sexpr.insert(sexpr.begin()+sexpr_top,
-                new ExprNode{sop.back(),sexpr[sexpr_top],sexpr[sexpr_top+1]});
-                sexpr_top++;
-                sop.pop_back();
+                bin_op_pop();
             }
             sop.push_back(s);
         }
@@ -118,11 +123,7 @@ ExprNode* func_parser(string func_s)
             while(sop.back() != "(")
             {
                 // 对于双目运算符
-                sexpr_top-=2;
-                sexpr.insert(sexpr.begin()+sexpr_top,
-                new ExprNode{sop.back(),sexpr[sexpr_top],sexpr[sexpr_top+1]});
-                sexpr_top++;
-                sop.pop_back();
+                bin_op_pop();
             }
             sop.pop_back();
         }
@@ -137,11 +138,7 @@ ExprNode* func_parser(string func_s)
     while(!sop.empty())
     {
         // 对于双目运算符
-        sexpr_top -= 2;
-        sexpr.insert(sexpr.begin()+sexpr_top,
-        new ExprNode{sop.back(),sexpr[sexpr_top],sexpr[sexpr_top+1]});
-        sexpr_top++;
-        sop.pop_back();
+        bin_op_pop();
     }
     return sexpr[0];
 
