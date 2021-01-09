@@ -65,7 +65,10 @@ map<string,double(*)(double,ExprNode*,ExprNode*)> ExprNode::opeff
             {"^",[](double x,ExprNode*a,ExprNode*b){return pow((*a)(x),(*b)(x));}},
             {"sin",[](double x, ExprNode*a,ExprNode*b){return sin((*a)(x));}},
             {"cos",[](double x, ExprNode*a,ExprNode*b){return cos((*a)(x));}},
-            {"exp",[](double x, ExprNode*a,ExprNode*b){return exp((*a)(x));}}
+            {"tan",[](double x, ExprNode*a,ExprNode*b){return tan((*a)(x));}},
+            {"exp",[](double x, ExprNode*a,ExprNode*b){return exp((*a)(x));}},
+            {"log",[](double x, ExprNode*a,ExprNode*b){return log((*a)(x));}},
+            {"gamma",[](double x, ExprNode*a,ExprNode*b){return tgamma((*a)(x));}}
 };
 
 void func_parser_preprocesser(string& func_s)
@@ -79,7 +82,7 @@ void func_parser_preprocesser(string& func_s)
     regex re_biop(R"([\+\*\-\/\^])");// using raw string
     func_s = regex_replace(func_s,re_biop," $0 ");
     // 分出 unary op
-    regex re_unop(R"((sin)|(cos)|(exp))");
+    regex re_unop(R"((sin)|(cos)|(tan)|(exp)|(log)|(gamma))");
     func_s = regex_replace(func_s,re_unop,"$0 ");
     // 利用 regex 将表达式中的 左右括号 分开
     regex re_lpar(R"(\()");
@@ -104,13 +107,14 @@ ExprNode* func_parser(string func_s)
     map<string,int> pri 
     {
         {"+",0},{"-",0},{"*",1},{"/",1},{"^",2},
-        {"sin",4},{"cos",4},{"exp",4}
+        {"sin",4},{"cos",4},{"tan",4},
+        {"exp",4},{"log",4},
+        {"gamma",4}
     };
-    regex re_op(R"([\+\-\*\/\^]|(sin)|(cos)|(exp))");
+    regex re_op(R"([\+\-\*\/\^]|(sin)|(cos)|(tan)|(exp)|(log)|(gamma))");
     regex re_lpar(R"(\()");
     regex re_rpar(R"(\))");
     regex re_biop(R"([\+\-\*\/\^])");
-    //regex re_unop(R"((sin))");
 
 
     // 使用栈完成字符串转化为表达式
@@ -191,14 +195,18 @@ double integrate(ExprNode* f, double a, double b)
     return res / 3 * h;
 }
 
+double solve(ExprNode* f, double x0)
+{
+
+}
 
 int main(int argc,char* argv[])
 {
     ExprNode* p = func_parser(string(argv[1]));
-    //double x = stod(argv[2]);
-    cout<<integrate(p,0,1)<<"\n";
+    double x = stod(argv[2]);
+    //cout<<integrate(p,0,1)<<"\n";
 
-    //cout<<(*p)(x)<<"\n";
+    cout<<(*p)(x)<<"\n";
   
     return 0;
 }
