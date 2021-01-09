@@ -8,6 +8,20 @@
 
 using namespace std;
 
+void remove_blank(string& s)
+{
+    // 利用 regex 做预处理，使得表达式没有空白字符
+    regex re_bl(R"(\s+)");
+    s = regex_replace(s,re_bl,"");
+}
+
+vector<string> split(string s, regex re)
+{
+    auto end = sregex_token_iterator();
+    vector<string> exprs(sregex_token_iterator(s.begin(),s.end(),re,-1),end);
+    return exprs;
+}
+
 // 定义 expr tree 的节点(定义为 functor)
 class ExprNode
 {
@@ -74,9 +88,8 @@ map<string,double(*)(double,ExprNode*,ExprNode*)> ExprNode::opeff
 void func_parser_preprocesser(string& func_s)
 {
     /* preprocess start */
-    // 利用 regex 做预处理，使得表达式没有空白字符
-    regex re_bl(R"(\s+)");
-    func_s = regex_replace(func_s,re_bl,"");
+    // 首先去除空白
+    remove_blank(func_s);
     // 利用 regex 将表达式中的 operator 和 term 分开
     // 分出 binary op
     regex re_biop(R"([\+\*\-\/\^])");// using raw string
@@ -97,9 +110,8 @@ ExprNode* func_parser(string func_s)
     func_parser_preprocesser(func_s);
     
     // 返回 exprs (vec of string)
-    auto end = sregex_token_iterator();
     regex re_bl(R"(\s+)");
-    vector<string> exprs(sregex_token_iterator(func_s.begin(),func_s.end(),re_bl,-1),end);
+    vector<string> exprs = split(func_s,re_bl);
     /* preprocess end */
 
     // 利用 map 表示运算符的优先级
@@ -223,12 +235,26 @@ double solve(ExprNode* f, double x0)
     return x;
 }
 
+double integrate_parser(string integrate_s)
+{
+    remove_blank(integrate_s);
+    regex re_bound(R"((\])|(integrate\[))");
+    integrate_s = regex_replace(integrate_s,re_bound,"");
+    regex re_sep(R"(,)");
+    integrate_s = regex_replace(integrate_s,re_sep," ");
+    // 返回拆分好的部分
+    regex re_bl(R"(\s+)");
+    vector<string> exprs = split(integrate_s,re_bl);
+
+    return integrate(func_parser(exprs[0]),stod(exprs[1]),stod(exprs[2]));    
+}
 int main(int argc,char* argv[])
 {
-    ExprNode* p = func_parser(string(argv[1]));
-    double x0 = stod(argv[2]);
+    cout<<integrate_parser(string(argv[1]))<<"\n";
+    //ExprNode* p = func_parser(string(argv[1]));
+    //double x0 = stod(argv[2]);
     //cout<<integrate(p,0,1)<<"\n";
-    cout<<solve(p,x0)<<"\n";
+    //cout<<solve(p,x0)<<"\n";
     //cout<<diff(p,x)<<"\n";
   
     return 0;
