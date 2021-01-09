@@ -235,31 +235,40 @@ double solve(ExprNode* f, double x0)
     return x;
 }
 
-double integrate_parser(string integrate_s)
-{
-    remove_blank(integrate_s);
-    regex re_bound(R"((\])|(integrate\[))");
-    integrate_s = regex_replace(integrate_s,re_bound,"");
-    regex re_sep(R"(,)");
-    // 返回拆分好的部分
-    vector<string> exprs = split(integrate_s,re_sep);
 
-    return integrate(func_parser(exprs[0]),stod(exprs[1]),stod(exprs[2]));    
-}
-
-double diff_parser(string diff_s)
+double statement_parser(string statement)
 {
-    remove_blank(diff_s);
-    regex re_bound(R"((diff\[)|(\]))");
-    diff_s = regex_replace(diff_s,re_bound,"");
+    enum{INTEGRATE,DIFF,SOLVE};
+    int tag;
+    if(regex_search(statement,regex(R"(integrate)"))) tag = INTEGRATE;
+    else if(regex_search(statement,regex(R"(diff)"))) tag = DIFF;
+    else if(regex_search(statement,regex(R"(solve)"))) tag = SOLVE;
+
+    remove_blank(statement);
+    regex re_bound(R"((integrate\[)|(diff\[)|(solve\[)|(\]))");
+    statement = regex_replace(statement,re_bound,"");
     regex re_sep(R"(,)");
-    vector<string> exprs = split(diff_s,re_sep);
-    return diff(func_parser(exprs[0]),stod(exprs[1]));
+    vector<string> exprs = split(statement,re_sep);
+    
+    switch (tag)
+    {
+    case INTEGRATE:
+        return integrate(func_parser(exprs[0]),stod(exprs[1]),stod(exprs[2]));
+    case DIFF:
+        return diff(func_parser(exprs[0]),stod(exprs[1]));
+    case SOLVE:
+        return solve(func_parser(exprs[0]),stod(exprs[1]));
+    default:
+        cout<<"Not a Statement!\n";
+        return 0;
+        break;
+    }
+    return 0;
 }
 
 int main(int argc,char* argv[])
 {
-    cout<<diff_parser(string(argv[1]))<<"\n";
+    cout<<statement_parser(string(argv[1]))<<"\n";
     //ExprNode* p = func_parser(string(argv[1]));
     //double x0 = stod(argv[2]);
     //cout<<integrate(p,0,1)<<"\n";
