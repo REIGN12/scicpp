@@ -241,16 +241,25 @@ double integrate_parser(string integrate_s)
     regex re_bound(R"((\])|(integrate\[))");
     integrate_s = regex_replace(integrate_s,re_bound,"");
     regex re_sep(R"(,)");
-    integrate_s = regex_replace(integrate_s,re_sep," ");
     // 返回拆分好的部分
-    regex re_bl(R"(\s+)");
-    vector<string> exprs = split(integrate_s,re_bl);
+    vector<string> exprs = split(integrate_s,re_sep);
 
     return integrate(func_parser(exprs[0]),stod(exprs[1]),stod(exprs[2]));    
 }
+
+double diff_parser(string diff_s)
+{
+    remove_blank(diff_s);
+    regex re_bound(R"((diff\[)|(\]))");
+    diff_s = regex_replace(diff_s,re_bound,"");
+    regex re_sep(R"(,)");
+    vector<string> exprs = split(diff_s,re_sep);
+    return diff(func_parser(exprs[0]),stod(exprs[1]));
+}
+
 int main(int argc,char* argv[])
 {
-    cout<<integrate_parser(string(argv[1]))<<"\n";
+    cout<<diff_parser(string(argv[1]))<<"\n";
     //ExprNode* p = func_parser(string(argv[1]));
     //double x0 = stod(argv[2]);
     //cout<<integrate(p,0,1)<<"\n";
