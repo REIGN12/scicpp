@@ -91,7 +91,6 @@ void func_parser_preprocesser(string& func_s)
     func_s = regex_replace(func_s,re_rpar," $0");
 }
 
-
 ExprNode* func_parser(string func_s)
 {
     // sep the op and term
@@ -204,20 +203,33 @@ double diff(ExprNode* f,double x)
 
 double solve(ExprNode* f, double x0)
 {
-    
-    const int cnt = 10000;
+    // Try Newton Method 
+    const int m_cnt = 10000;
+    int cnt = 0;
     const double eps = 1e-5;
-
-
+    double x = x0;
+    double chan;
+    do
+    {
+        chan = (*f)(x)/diff(f,x);
+        x -= chan;
+        cnt++;
+        if(cnt>m_cnt)
+        {
+            cout<<"Wrong Input!"<<"\n";
+            return 1;
+        }
+    } while (chan*chan > eps*eps);
+    return x;
 }
 
 int main(int argc,char* argv[])
 {
     ExprNode* p = func_parser(string(argv[1]));
-    double x = stod(argv[2]);
+    double x0 = stod(argv[2]);
     //cout<<integrate(p,0,1)<<"\n";
-
-    cout<<diff(p,x)<<"\n";
+    cout<<solve(p,x0)<<"\n";
+    //cout<<diff(p,x)<<"\n";
   
     return 0;
 }
