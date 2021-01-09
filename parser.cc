@@ -195,8 +195,19 @@ double integrate(ExprNode* f, double a, double b)
     return res / 3 * h;
 }
 
+double diff(ExprNode* f,double x)
+{
+    // use mid point method to cal derivative
+    const double eps = 1e-4;
+    return ((*f)(x+eps)-(*f)(x-eps)) / (2*eps);
+}
+
 double solve(ExprNode* f, double x0)
 {
+    
+    const int cnt = 10000;
+    const double eps = 1e-5;
+
 
 }
 
@@ -206,7 +217,7 @@ int main(int argc,char* argv[])
     double x = stod(argv[2]);
     //cout<<integrate(p,0,1)<<"\n";
 
-    cout<<(*p)(x)<<"\n";
+    cout<<diff(p,x)<<"\n";
   
     return 0;
 }
