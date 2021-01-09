@@ -45,15 +45,19 @@ class ExprNode
             }
         }
 
-    //private:
+    private:
         double val;
         double(*func)(double,ExprNode*,ExprNode*);
         ExprNode* lc;
         ExprNode* rc;
         enum{VAL,FUNC};
         int tag;
-        map<string,double(*)(double,ExprNode*,ExprNode*)> opeff
-        {
+        // use opeff as static(owned by all member in the class)
+        static map<string,double(*)(double,ExprNode*,ExprNode*)> opeff;
+        
+};
+map<string,double(*)(double,ExprNode*,ExprNode*)> ExprNode::opeff
+{
             {"+",[](double x,ExprNode*a,ExprNode*b){return (*a)(x)+(*b)(x);}},
             {"-",[](double x,ExprNode*a,ExprNode*b){return (*a)(x)-(*b)(x);}},
             {"*",[](double x,ExprNode*a,ExprNode*b){return (*a)(x)*(*b)(x);}},
@@ -62,7 +66,6 @@ class ExprNode
             {"sin",[](double x, ExprNode*a,ExprNode*b){return sin((*a)(x));}},
             {"cos",[](double x, ExprNode*a,ExprNode*b){return cos((*a)(x));}},
             {"exp",[](double x, ExprNode*a,ExprNode*b){return exp((*a)(x));}}
-        };
 };
 
 void func_parser_preprocesser(string& func_s)
@@ -84,6 +87,7 @@ void func_parser_preprocesser(string& func_s)
     regex re_rpar(R"(\))");
     func_s = regex_replace(func_s,re_rpar," $0");
 }
+
 
 ExprNode* func_parser(string func_s)
 {
@@ -169,6 +173,9 @@ ExprNode* func_parser(string func_s)
     return sexpr[0];
 
 }
+
+
+
 
 int main(int argc,char* argv[])
 {
