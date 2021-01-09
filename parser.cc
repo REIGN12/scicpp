@@ -174,15 +174,31 @@ ExprNode* func_parser(string func_s)
 
 }
 
+double integrate(ExprNode* f, double a, double b)
+{
+    // Use Simpson method to cal integration
 
+    const int num = 100; // num should be even
+    double res = (*f)(a)+(*f)(b);
+    const double h = (b-a)/num;
+    double x;
+    for(int i = 1,flag = 1; i < num; ++i,flag = -flag)
+    {
+        x = a+h*i;
+        if(flag == 1)res += 4*(*f)(x);
+        else res += 2*(*f)(x);
+    }
+    return res / 3 * h;
+}
 
 
 int main(int argc,char* argv[])
 {
     ExprNode* p = func_parser(string(argv[1]));
-    double x = stod(argv[2]);
+    //double x = stod(argv[2]);
+    cout<<integrate(p,0,1)<<"\n";
 
-    cout<<(*p)(x)<<"\n";
+    //cout<<(*p)(x)<<"\n";
   
     return 0;
 }
