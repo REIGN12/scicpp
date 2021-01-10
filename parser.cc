@@ -235,17 +235,17 @@ double solve(ExprNode* f, double x0)
     return x;
 }
 
-
 double statement_parser(string statement)
 {
-    enum{INTEGRATE,DIFF,SOLVE};
+    enum{INTEGRATE,DIFF,SOLVE,EVAL};
     int tag;
     if(regex_search(statement,regex(R"(integrate)"))) tag = INTEGRATE;
     else if(regex_search(statement,regex(R"(diff)"))) tag = DIFF;
     else if(regex_search(statement,regex(R"(solve)"))) tag = SOLVE;
+    else if(regex_search(statement,regex(R"(eval)"))) tag = EVAL;
 
     remove_blank(statement);
-    regex re_bound(R"((integrate\[)|(diff\[)|(solve\[)|(\]))");
+    regex re_bound(R"((integrate\[)|(diff\[)|(solve\[)|(eval\[)|(\]))");
     statement = regex_replace(statement,re_bound,"");
     regex re_sep(R"(,)");
     vector<string> exprs = split(statement,re_sep);
@@ -258,6 +258,8 @@ double statement_parser(string statement)
         return diff(func_parser(exprs[0]),stod(exprs[1]));
     case SOLVE:
         return solve(func_parser(exprs[0]),stod(exprs[1]));
+    case EVAL:
+        return (*func_parser(exprs[0]))(stod(exprs[1]));
     default:
         cout<<"Not a Statement!\n";
         return 0;
@@ -269,11 +271,5 @@ double statement_parser(string statement)
 int main(int argc,char* argv[])
 {
     cout<<statement_parser(string(argv[1]))<<"\n";
-    //ExprNode* p = func_parser(string(argv[1]));
-    //double x0 = stod(argv[2]);
-    //cout<<integrate(p,0,1)<<"\n";
-    //cout<<solve(p,x0)<<"\n";
-    //cout<<diff(p,x)<<"\n";
-  
     return 0;
 }
